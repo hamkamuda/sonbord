@@ -1,148 +1,182 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Neon Arcade Soundboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neon Soundboard - G-Zi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Orbitron', sans-serif;
+    }
     body {
       margin: 0;
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(to right, #1f0036, #0b0213);
+      background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
       color: #fff;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px 20px;
-      overflow-x: hidden;
+      justify-content: flex-start;
+      padding: 20px;
     }
-
     h1 {
-      font-size: 2.5rem;
-      color: #ff00ff;
-      text-shadow: 0 0 10px #ff00ff, 0 0 20px #00f2ff;
-      margin-bottom: 30px;
+      font-size: 36px;
+      margin-bottom: 20px;
+      color: #39ff14;
+      text-shadow: 0 0 10px #39ff14;
     }
-
-    .soundboard {
+    .controls {
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .controls input[type="file"] {
+      background: #222;
+      color: #fff;
+      padding: 10px;
+      border: 2px solid #39ff14;
+      border-radius: 8px;
+    }
+    .board {
+      display: flex;
+      flex-wrap: wrap;
       gap: 20px;
-      max-width: 1000px;
+      justify-content: center;
     }
-
-    .button {
-      background: linear-gradient(to bottom right, #00e0ff, #ff00c8);
+    .sound-button {
+      background: linear-gradient(to right, #ff00cc, #3333ff);
+      padding: 15px 25px;
       border: none;
-      padding: 20px;
-      width: 160px;
-      height: 120px;
-      border-radius: 15px;
-      font-size: 1rem;
-      font-weight: bold;
-      color: #fff;
-      text-shadow: 0 0 5px black;
-      box-shadow: 0 0 15px #00e0ff, 0 0 25px #ff00c8;
+      border-radius: 12px;
+      color: white;
       cursor: pointer;
-      transition: 0.3s;
+      font-size: 16px;
+      transition: transform 0.2s;
+      position: relative;
+      box-shadow: 0 0 10px #00f7ff;
     }
-
-    .button:hover {
+    .sound-button:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 25px #fff, 0 0 35px #ff00ff;
     }
-
-    #customUpload {
-      margin: 30px 0;
+    .volume-control {
+      width: 100px;
     }
-
-    .controls {
-      margin-top: 20px;
+    .sound-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-
-    .controls button {
-      background: #0ff;
-      color: #000;
-      padding: 10px 18px;
-      margin: 0 10px;
-      border: none;
-      border-radius: 10px;
-      font-weight: bold;
-      box-shadow: 0 0 10px #0ff;
+    .sound-actions {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    button.action {
+      padding: 5px 10px;
+      background: #111;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 6px;
+      font-size: 12px;
       cursor: pointer;
-      transition: 0.3s;
     }
-
-    .controls button:hover {
-      background: #f0f;
-      color: #fff;
-      box-shadow: 0 0 15px #f0f;
+    button.action:hover {
+      background: #222;
     }
   </style>
 </head>
 <body>
-  <h1>🎮 G-Zi Arcade Soundboard</h1>
-
-  <input type="file" id="customUpload" accept="audio/*" />
-
-  <div class="soundboard" id="soundboard">
-    <button class="button" onclick="playSound('sound1')">🚀 Start</button>
-    <button class="button" onclick="playSound('sound2')">⚡ Power</button>
-    <button class="button" onclick="playSound('sound3')">🔥 Boost</button>
-    <button class="button" onclick="playSound('sound4')">🎯 Sniper</button>
-  </div>
+  <h1>🎛️ Neon Soundboard</h1>
 
   <div class="controls">
-    <button onclick="pauseSound()">⏸ Pause</button>
-    <button onclick="stopSound()">⏹ Stop</button>
+    <input type="file" id="upload" accept="audio/*" multiple />
   </div>
 
-  <audio id="audioPlayer"></audio>
+  <div class="board" id="board"></div>
 
   <script>
-    const sounds = {
-      sound1: 'https://www.soundjay.com/button/sounds/button-10.mp3',
-      sound2: 'https://www.soundjay.com/button/sounds/button-7.mp3',
-      sound3: 'https://www.soundjay.com/button/sounds/button-09.mp3',
-      sound4: 'https://www.soundjay.com/button/sounds/button-6.mp3'
-    };
+    let sounds = JSON.parse(localStorage.getItem('soundboard') || '[]');
 
-    const audio = document.getElementById('audioPlayer');
+    function renderBoard() {
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+      sounds.forEach((sound, index) => {
+        const container = document.createElement('div');
+        container.className = 'sound-item';
 
-    function playSound(key) {
-      audio.src = sounds[key];
+        const btn = document.createElement('button');
+        btn.className = 'sound-button';
+        btn.innerText = sound.name;
+        btn.onclick = () => playSound(index);
+
+        const audio = new Audio(sound.url);
+        audio.id = `audio-${index}`;
+
+        const actions = document.createElement('div');
+        actions.className = 'sound-actions';
+
+        const volume = document.createElement('input');
+        volume.type = 'range';
+        volume.min = 0;
+        volume.max = 1;
+        volume.step = 0.01;
+        volume.value = 1;
+        volume.className = 'volume-control';
+        volume.oninput = () => {
+          document.getElementById(`audio-${index}`).volume = volume.value;
+        };
+
+        const pauseBtn = document.createElement('button');
+        pauseBtn.className = 'action';
+        pauseBtn.innerText = '⏸️';
+        pauseBtn.onclick = () => document.getElementById(`audio-${index}`).pause();
+
+        const stopBtn = document.createElement('button');
+        stopBtn.className = 'action';
+        stopBtn.innerText = '⏹️';
+        stopBtn.onclick = () => {
+          const a = document.getElementById(`audio-${index}`);
+          a.pause();
+          a.currentTime = 0;
+        };
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'action';
+        deleteBtn.innerText = '🗑️';
+        deleteBtn.onclick = () => {
+          sounds.splice(index, 1);
+          localStorage.setItem('soundboard', JSON.stringify(sounds));
+          renderBoard();
+        };
+
+        actions.append(volume, pauseBtn, stopBtn, deleteBtn);
+        container.append(btn, audio, actions);
+        board.appendChild(container);
+      });
+    }
+
+    function playSound(index) {
+      const audio = document.getElementById(`audio-${index}`);
+      audio.currentTime = 0;
       audio.play();
     }
 
-    function stopSound() {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-
-    function pauseSound() {
-      audio.pause();
-    }
-
-    document.getElementById('customUpload').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
+    document.getElementById('upload').addEventListener('change', (e) => {
+      Array.from(e.target.files).forEach(file => {
         const reader = new FileReader();
-        reader.onload = function(evt) {
-          const url = evt.target.result;
-          const newBtn = document.createElement('button');
-          newBtn.className = 'button';
-          newBtn.innerText = '🎵 Custom';
-          newBtn.onclick = () => {
-            audio.src = url;
-            audio.play();
-          };
-          document.getElementById('soundboard').appendChild(newBtn);
+        reader.onload = (event) => {
+          sounds.push({ name: file.name, url: event.target.result });
+          localStorage.setItem('soundboard', JSON.stringify(sounds));
+          renderBoard();
         };
         reader.readAsDataURL(file);
-      }
+      });
     });
+
+    renderBoard();
   </script>
 </body>
 </html>
