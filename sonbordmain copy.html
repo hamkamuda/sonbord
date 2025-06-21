@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Arcade Soundboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to right, #1f0036, #0b0213);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #ff00ff;
+      text-shadow: 0 0 10px #ff00ff, 0 0 20px #00f2ff;
+      margin-bottom: 30px;
+    }
+
+    .soundboard {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      max-width: 1000px;
+    }
+
+    .button {
+      background: linear-gradient(to bottom right, #00e0ff, #ff00c8);
+      border: none;
+      padding: 20px;
+      width: 160px;
+      height: 120px;
+      border-radius: 15px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 0 5px black;
+      box-shadow: 0 0 15px #00e0ff, 0 0 25px #ff00c8;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px #fff, 0 0 35px #ff00ff;
+    }
+
+    #customUpload {
+      margin: 30px 0;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    .controls button {
+      background: #0ff;
+      color: #000;
+      padding: 10px 18px;
+      margin: 0 10px;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      box-shadow: 0 0 10px #0ff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .controls button:hover {
+      background: #f0f;
+      color: #fff;
+      box-shadow: 0 0 15px #f0f;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 G-Zi Arcade Soundboard</h1>
+
+  <input type="file" id="customUpload" accept="audio/*" />
+
+  <div class="soundboard" id="soundboard">
+    <button class="button" onclick="playSound('sound1')">🚀 Start</button>
+    <button class="button" onclick="playSound('sound2')">⚡ Power</button>
+    <button class="button" onclick="playSound('sound3')">🔥 Boost</button>
+    <button class="button" onclick="playSound('sound4')">🎯 Sniper</button>
+  </div>
+
+  <div class="controls">
+    <button onclick="pauseSound()">⏸ Pause</button>
+    <button onclick="stopSound()">⏹ Stop</button>
+  </div>
+
+  <audio id="audioPlayer"></audio>
+
+  <script>
+    const sounds = {
+      sound1: 'https://www.soundjay.com/button/sounds/button-10.mp3',
+      sound2: 'https://www.soundjay.com/button/sounds/button-7.mp3',
+      sound3: 'https://www.soundjay.com/button/sounds/button-09.mp3',
+      sound4: 'https://www.soundjay.com/button/sounds/button-6.mp3'
+    };
+
+    const audio = document.getElementById('audioPlayer');
+
+    function playSound(key) {
+      audio.src = sounds[key];
+      audio.play();
+    }
+
+    function stopSound() {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
+    function pauseSound() {
+      audio.pause();
+    }
+
+    document.getElementById('customUpload').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const url = evt.target.result;
+          const newBtn = document.createElement('button');
+          newBtn.className = 'button';
+          newBtn.innerText = '🎵 Custom';
+          newBtn.onclick = () => {
+            audio.src = url;
+            audio.play();
+          };
+          document.getElementById('soundboard').appendChild(newBtn);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+</body>
+</html>
